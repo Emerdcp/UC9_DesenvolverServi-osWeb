@@ -32,22 +32,41 @@ btnBuscar.addEventListener("click", async () => {
 
                 <div class="previsao">
                     <h3>Próximos dias</h3>
+                    <div class="lista-dias">
         `;
 
         for (let i = 1; i < 7; i++) {
-            html += `
+        html += `
             <div class="card-dia">
-                <strong>${daily.time[i]}</strong><br>
-                🌡️ Mín: ${daily.temperature_2m_min[i]}°C / Máx: ${daily.temperature_2m_max[i]}°C <br>
-                🌬️ Vento:  ${current.wind_speed_10m} km/h <br>
-                🌧️ Previsão Chuva: ${daily.precipitation_sum[i]} mm
+                <strong>
+                    ${new Date(daily.time[i] + "T00:00:00").toLocaleDateString('pt-BR', {
+                        weekday: 'long',
+                        timeZone: 'America/Sao_Paulo'
+                    })}
+                </strong>
+
+                <div style="font-size:18px;">
+                    Máx: ${daily.temperature_2m_max[i]}°
+                </div>
+
+                <div style="font-size:12px; color:#555;">
+                    Mín: ${daily.temperature_2m_min[i]}°
+                </div>
+
+                <div style="margin-top:5px;">
+                    Chuva: 🌧️ ${daily.precipitation_sum[i]}mm
+                </div>
+
+                <div style="margin-top:5px;">
+                    Vento: 🌬️ ${current.wind_speed_10m} km/h
+                </div>
             </div>
         `;
+
         }
 
-        html += `</div>`;
+        html += `</div></div>`;
 
-        html += "</ul>";
         resultado.innerHTML = html;
 
     } catch (err) {
