@@ -6,7 +6,11 @@ btnBuscar.addEventListener("click", async () => {
     const cidade = inputCidade.value.trim();
     if (!cidade) return;
 
-    resultado.innerHTML = "Carregando...";
+    resultado.innerHTML = `
+        <div style="text-align:center; padding:20px;">
+            ⏳ Buscando clima...
+        </div>
+    `;
 
     try {
         const res = await fetch(`/api/clima?cidade=${cidade}`);
@@ -17,26 +21,51 @@ btnBuscar.addEventListener("click", async () => {
         const current = clima.current;
         const daily = clima.daily;
 
+        function getIcon(code) {
+            if (code === 0) return "☀️";
+            if (code <= 3) return "⛅";
+            if (code <= 48) return "☁️";
+            if (code <= 67) return "🌧️";
+            if (code <= 77) return "❄️";
+            if (code <= 99) return "⛈️";
+            return "🌍";
+        }
+
+        function setBackground(code) {
+            let cor = "#74b9ff";
+
+            if (code === 0) cor = "#ffeaa7";
+            else if (code <= 3) cor = "#81ecec";
+            else if (code <= 67) cor = "#74b9ff";
+            else cor = "#636e72";
+
+            document.body.style.background = `linear-gradient(135deg, ${cor}, #a29bfe)`;
+        }
+
+        // 🔥 CHAMA O BACKGROUND
+        setBackground(current.weathercode);
+
         let html = `
             <h2 style="text-align:center;">${local.name}</h2>
 
-                <div class="temp-principal">
-                    ${current.temperature_2m}°C
-                </div>
+            <div class="temp-principal">
+                ${getIcon(current.weathercode)} ${current.temperature_2m}°C
+            </div>
 
-                <div class="info">
-                    🌡️ Mín: ${daily.temperature_2m_min[0]}°C / Máx: ${daily.temperature_2m_max[0]}°C <br>
-                    🌬️ Vento:  ${current.wind_speed_10m} km/h <br>
-                    💧 Previsão Chuva: ${current.relative_humidity_2m}%
-                </div>
+            <div class="info">
+                🌡️ Mín: ${daily.temperature_2m_min[0]}°C / Máx: ${daily.temperature_2m_max[0]}°C <br>
+                🌬️ Vento: ${current.wind_speed_10m} km/h <br>
+                🌧️ Chuva: ${daily.precipitation_sum[0]}mm <br>
+                💧 Umidade: ${current.relative_humidity_2m}%
+            </div>
 
-                <div class="previsao">
-                    <h3>Próximos dias</h3>
-                    <div class="lista-dias">
+            <div class="previsao">
+                <h3>Próximos dias</h3>
+                <div class="lista-dias">
         `;
 
         for (let i = 1; i < 7; i++) {
-        html += `
+            html += `
             <div class="card-dia">
                 <strong>
                     ${new Date(daily.time[i] + "T00:00:00").toLocaleDateString('pt-BR', {
@@ -58,15 +87,15 @@ btnBuscar.addEventListener("click", async () => {
                 </div>
 
                 <div style="margin-top:5px;">
-                    Vento: 🌬️ ${current.wind_speed_10m} km/h
+                    💧 Mín: ${daily.relative_humidity_2m_min[i]}% - Máx: ${daily.relative_humidity_2m_max[i]}%
                 </div>
             </div>
-        `;
-
+            `;
         }
 
         html += `</div></div>`;
 
+        // ✅ AGORA SIM MOSTRA
         resultado.innerHTML = html;
 
     } catch (err) {
